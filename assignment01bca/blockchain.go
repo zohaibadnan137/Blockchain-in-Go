@@ -1,11 +1,5 @@
 package assignment01bca
 
-type Block struct {
-	next         *Block
-	transactions interface{}
-	prevHash     string
-}
-
 // ******** ******** PUBLIC FUNCTIONS ******** ******** //
 
 // Creates a new block

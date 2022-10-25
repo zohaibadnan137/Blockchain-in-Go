@@ -1,3 +1,3 @@
-module blockchaina1.com/m/v2
+module github.com/zohaibadnan137
 
 go 1.19
