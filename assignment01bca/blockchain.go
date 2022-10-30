@@ -1,5 +1,22 @@
 package assignment01bca
 
+// Structs to be used
+type Block struct {
+	// Hash of the current block
+	Hash []byte
+	// Data i.e our transaction(s)
+	Data []byte
+	// Hash of the previous block
+	PrevHash []byte
+	// Random number used to solve the crypto puzzle
+	Nounce int
+}
+
+// Represents the Blockchain
+type Blockchain struct {
+	Chain []*Block
+}
+
 // ******** ******** PUBLIC FUNCTIONS ******** ******** //
 
 // Creates a new block
