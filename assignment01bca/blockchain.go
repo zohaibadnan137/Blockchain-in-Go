@@ -1,6 +1,7 @@
 package assignment01bca
 
 import (
+	"math/rand"
 	"time"
 )
 
@@ -20,7 +21,7 @@ type Node struct {
 }
 
 type MerkleTree struct {
-	root         *Node
+	root         Node
 	transactions []Transaction
 }
 
@@ -41,9 +42,14 @@ type Blockchain struct {
 
 // ******** ******** PRIVATE FUNCTIONS ******** ******** //
 
+// Adds the given node at the end of the specified Merkle tree
+func addNode(merkleTree *MerkleTree, node Node) {
+
+}
+
 // ******** ******** PUBLIC FUNCTIONS ******** ******** //
 
-// Creates a genesis block
+// Creates a new blockchain along with the respective genesis block
 func CreateBlockchain() Blockchain {
 	genesisBlock := Block{
 		timestamp: time.Now(),
@@ -53,12 +59,34 @@ func CreateBlockchain() Blockchain {
 		genesisBlock,
 		[]Block{genesisBlock},
 	}
+}
 
+// Creates a new transaction
+func CreateTransaction(from, to string, amount byte) Transaction {
+
+	data := map[string]interface{}{
+		"from":   from,
+		"to":     to,
+		"amount": amount,
+	}
+
+	return Transaction{
+		byte(rand.Int()),
+		data,
+	}
 }
 
 // Creates a new block*
-func NewBlock() {
+func NewBlock(blockchain *Blockchain, transactions []Transaction) Block {
+	// Create a Merkle Tree
+	//merkleTree := MerkleTree{
+	//transactions: transactions,
+	//}
 
+	// Add a new node in the Merkle tree for each transaction
+
+	block := Block{}
+	return block
 }
 
 // Finds the nonce value for a block*
