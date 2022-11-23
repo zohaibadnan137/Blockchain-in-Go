@@ -12,7 +12,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	fmt.Println("Create a new blockchain...")
-	blockchain := assignment01bca.CreateBlockchain()
+	blockchain := assignment01bca.CreateBlockchain(3)
 
 	fmt.Println("Create three new transactions from Zohaib to Hussain...")
 
