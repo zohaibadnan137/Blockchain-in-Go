@@ -12,7 +12,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	fmt.Println("Create a new blockchain...")
-	blockchain := assignment01bca.CreateBlockchain(3)
+	blockchain := assignment01bca.CreateBlockchain(2)
 
 	fmt.Println("Create three new transactions from Zohaib to Hussain...")
 
@@ -26,4 +26,12 @@ func main() {
 
 	fmt.Println("Print the transactions added in the new block...")
 	assignment01bca.DisplayMerkelTree(block)
+
+	start := time.Now()
+	fmt.Println("Mining the block...")
+	blockchain.MineBlock(&block)
+	elapsed := time.Since(start)
+	fmt.Printf("Mining took %s.", elapsed)
+
+	blockchain.DisplayBlocks()
 }
