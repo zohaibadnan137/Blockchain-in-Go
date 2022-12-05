@@ -384,7 +384,6 @@ func (node *Node) ReceiveTransaction(conn net.Conn) {
 	go node.PropogateTransaction(transaction)
 
 	// If the number of stored transactions reaches the specified limit, create a new block
-	node.nodeMutex.Lock()
 	if len(node.transactions) == TRANSACTIONS_PER_BLOCK {
 		go node.CreateBlock()
 	}
@@ -411,16 +410,21 @@ func (node *Node) ReceiveBlock(conn net.Conn) {
 	block.MERKLETREE = merkleTree
 
 	// Verify the block
-	flag := node.blockchain.VerifyBlock(block)
+	/*flag := node.blockchain.VerifyBlock(block)
 	if !flag {
 		return
-	}
+	}*/
 
 	// If the block is valid, add it to the blockchain
 	node.blockchain.AddBlock(&block)
 
 	// Prune the transactions in the newly received block from the stored list of transactions
 	node.PruneTransactions(block.MERKLETREE.TRANSACTIONS)
+
+	fmt.Println("\n****************************************************************")
+	fmt.Println("Block RECEIVED BY NODE " + node.name + ".")
+	node.blockchain.Display()
+	fmt.Println("****************************************************************")
 
 	// Propogate the received block further
 	go node.PropogateBlock(block)
@@ -435,6 +439,8 @@ func (node *Node) CreateBlock() {
 }
 
 func (node *Node) PruneTransactions(transactions []assignment01bca.Transaction) {
+	node.nodeMutex.Lock()
+
 	for i := 0; i < len(transactions); i++ {
 		for j := 0; j < len(node.transactions); {
 			if transactions[i].ID == node.transactions[j].ID {

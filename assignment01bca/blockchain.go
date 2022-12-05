@@ -212,6 +212,19 @@ func (blockchain *Blockchain) AddBlock(block *Block) {
 	blockchain.chain = append(blockchain.chain, *block)
 }
 
+func (blockchain Blockchain) Display() {
+	for i := 0; i < len(blockchain.chain); i++ {
+		fmt.Println("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+		fmt.Println("// BLOCK HASH: ", blockchain.chain[i].HASH)
+		fmt.Println("// PREVIOUS BLOCK HASH: ", blockchain.chain[i].PREVIOUSHASH)
+		fmt.Println("// TIMESTAMP: ", blockchain.chain[i].TIMESTAMP.Format(time.RFC822))
+		fmt.Println("// NONCE: ", blockchain.chain[i].NONCE)
+		fmt.Println("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+
+		DisplayMerkelTree(blockchain.chain[i])
+	}
+}
+
 // Prints all the blocks in the blockchain*
 func (blockchain Blockchain) DisplayBlocks() {
 	for i := 0; i < len(blockchain.chain); i++ {
@@ -227,7 +240,7 @@ func (blockchain Blockchain) DisplayBlocks() {
 // Prints all the transactions in a block*
 func DisplayMerkelTree(block Block) {
 	if len(block.MERKLETREE.TRANSACTIONS) == 0 {
-		fmt.Println("This block does not have any transactions")
+		fmt.Println("\nThis block does not have any transactions.")
 	} else {
 		for i := 0; i < len(block.MERKLETREE.TRANSACTIONS); i++ {
 			fmt.Println("")
