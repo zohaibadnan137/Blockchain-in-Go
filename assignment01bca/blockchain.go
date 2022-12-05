@@ -55,7 +55,37 @@ type Blockchain struct {
 
 // ******** ******** PRIVATE FUNCTIONS ******** ******** //
 
-func createMerkleTree(transactions []Transaction) MerkleTree {
+// ******** ******** PUBLIC FUNCTIONS ******** ******** //
+
+// Creates a new blockchain along with the respective genesis block
+func CreateBlockchain(difficulty int) Blockchain {
+	genesisBlock := Block{
+		TIMESTAMP: time.Now(),
+	}
+
+	return Blockchain{
+		genesisBlock,
+		[]Block{genesisBlock},
+		difficulty,
+	}
+}
+
+// Creates a new transaction
+func CreateTransaction(from, to string, amount byte) Transaction {
+	data := map[string]interface{}{
+		"from":   from,
+		"to":     to,
+		"amount": amount,
+	}
+
+	return Transaction{
+		byte(rand.Int()),
+		data,
+		time.Now(),
+	}
+}
+
+func CreateMerkleTree(transactions []Transaction) MerkleTree {
 
 	numberOfTransactions := len(transactions) // Get the number of transactions
 	newNumberOfTransactions := numberOfTransactions
@@ -134,48 +164,10 @@ func createMerkleTree(transactions []Transaction) MerkleTree {
 	}
 }
 
-// Adds the given block into the blockchain
-func (blockchain *Blockchain) addBlock(block *Block) {
-	var previousBlock *Block = &blockchain.chain[len(blockchain.chain)-1]
-	previousBlock.NEXTBLOCK = block
-	block.PREVIOUSBLOCK = previousBlock
-	blockchain.chain = append(blockchain.chain, *block)
-}
-
-// ******** ******** PUBLIC FUNCTIONS ******** ******** //
-
-// Creates a new blockchain along with the respective genesis block
-func CreateBlockchain(difficulty int) Blockchain {
-	genesisBlock := Block{
-		TIMESTAMP: time.Now(),
-	}
-
-	return Blockchain{
-		genesisBlock,
-		[]Block{genesisBlock},
-		difficulty,
-	}
-}
-
-// Creates a new transaction
-func CreateTransaction(from, to string, amount byte) Transaction {
-	data := map[string]interface{}{
-		"from":   from,
-		"to":     to,
-		"amount": amount,
-	}
-
-	return Transaction{
-		byte(rand.Int()),
-		data,
-		time.Now(),
-	}
-}
-
 // Creates a new block*
 func NewBlock(blockchain *Blockchain, transactions []Transaction) Block {
 	// Create a Merkle Tree
-	merkleTree := createMerkleTree(transactions)
+	merkleTree := CreateMerkleTree(transactions)
 
 	return Block{
 		HASH:          merkleTree.ROOT.HASH,
@@ -208,9 +200,16 @@ func (blockchain *Blockchain) MineBlock(block *Block) {
 		}
 	}
 
-	fmt.Println(nonce)
 	block.NONCE = nonce        // Add the nonce to the mined block
-	blockchain.addBlock(block) // Add the block to the blockchain
+	blockchain.AddBlock(block) // Add the block to the blockchain
+}
+
+// Adds the given block into the blockchain
+func (blockchain *Blockchain) AddBlock(block *Block) {
+	var previousBlock *Block = &blockchain.chain[len(blockchain.chain)-1]
+	previousBlock.NEXTBLOCK = block
+	block.PREVIOUSBLOCK = previousBlock
+	blockchain.chain = append(blockchain.chain, *block)
 }
 
 // Prints all the blocks in the blockchain*
@@ -293,7 +292,7 @@ func (transaction Transaction) CalculateHash() [32]byte {
 
 func (block Block) CalculateHash() [32]byte {
 	// Create a temporary Merkle tree for the transactions in the block and return the hash of the root
-	temporaryMerkleTree := createMerkleTree(block.MERKLETREE.TRANSACTIONS)
+	temporaryMerkleTree := CreateMerkleTree(block.MERKLETREE.TRANSACTIONS)
 	hash := temporaryMerkleTree.ROOT.HASH
 	return hash
 }
@@ -313,4 +312,22 @@ func (block Block) GetBlockchainLength() int {
 	}
 
 	return length
+}
+
+// Checks whether the nonce value for the given block is correct
+func (blockchain Blockchain) VerifyBlock(block Block) bool {
+	concatenated_hashes := append(block.HASH[:], block.PREVIOUSHASH[:]...)
+	concatenated_hashes = append(concatenated_hashes[:], block.NONCE[:]...)
+	hash := sha256.Sum256(concatenated_hashes[:])
+
+	flag := true
+	// Check whether the hash has the required number of leading zeroes
+	for count := 0; count < blockchain.difficulty; count++ {
+		if hash[count] > 0 {
+			flag = false
+			break
+		}
+	}
+
+	return flag
 }
