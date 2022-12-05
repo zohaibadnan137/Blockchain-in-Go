@@ -12,38 +12,38 @@ import (
 // ******** ******** STRUCTURES ******** ******** //
 
 type Transaction struct {
-	id        byte
-	data      map[string]interface{}
-	timestamp time.Time
+	ID        byte
+	DATA      map[string]interface{}
+	TIMESTAMP time.Time
 }
 
 type MerkleTreeNode struct {
-	transaction *Transaction
-	hash        [32]byte
+	TRANSACTION *Transaction
+	HASH        [32]byte
 
-	left   *MerkleTreeNode
-	right  *MerkleTreeNode
-	parent *MerkleTreeNode
+	LEFT   *MerkleTreeNode
+	RIGHT  *MerkleTreeNode
+	PARENT *MerkleTreeNode
 
-	isLeaf bool
+	ISLEAFNODE bool
 }
 
 type MerkleTree struct {
-	root         MerkleTreeNode
-	transactions []Transaction
+	ROOT         MerkleTreeNode
+	TRANSACTIONS []Transaction
 }
 
 type Block struct {
-	hash         [32]byte // Merely represents the hash of the block's Merkle tree's root
-	previousHash [32]byte
+	HASH         [32]byte // Merely represents the hash of the block's Merkle tree's root
+	PREVIOUSHASH [32]byte
 
-	previousBlock *Block
-	nextBlock     *Block
+	PREVIOUSBLOCK *Block
+	NEXTBLOCK     *Block
 
-	merkleTree MerkleTree
+	MERKLETREE MerkleTree
 
-	timestamp time.Time
-	nonce     [4]byte // A random four-byte number that is calculated when the block is mined
+	TIMESTAMP time.Time
+	NONCE     [4]byte // A random four-byte number that is calculated when the block is mined
 }
 
 type Blockchain struct {
@@ -80,15 +80,15 @@ func createMerkleTree(transactions []Transaction) MerkleTree {
 	// Create a new leaf MerkleTreeNode for each transaction
 	leafMerkleTreeNodes := make([]MerkleTreeNode, newNumberOfTransactions)
 	for i := 0; i < newNumberOfTransactions; i++ {
-		leafMerkleTreeNodes[i].transaction = &finalTransactions[i]
-		leafMerkleTreeNodes[i].isLeaf = true
+		leafMerkleTreeNodes[i].TRANSACTION = &finalTransactions[i]
+		leafMerkleTreeNodes[i].ISLEAFNODE = true
 
-		data, error := json.Marshal(finalTransactions[i].data)
+		data, error := json.Marshal(finalTransactions[i].DATA)
 		if error != nil {
-			fmt.Println("Error! The hash for transaction ", finalTransactions[i].id, " cannot be calculated.")
+			fmt.Println("Error! The hash for transaction ", finalTransactions[i].ID, " cannot be calculated.")
 		} else {
 			hash := sha256.Sum256(data)
-			leafMerkleTreeNodes[i].hash = hash
+			leafMerkleTreeNodes[i].HASH = hash
 		}
 	}
 
@@ -105,16 +105,16 @@ func createMerkleTree(transactions []Transaction) MerkleTree {
 
 		for i := 0; i < numberOfParentMerkleTreeNodes; i++ {
 			// Set the current MerkleTreeNode as the parent for the two respective children
-			childMerkleTreeNodes[childMerkleTreeNodeIndex].parent = &parentMerkleTreeNodes[i]
-			childMerkleTreeNodes[childMerkleTreeNodeIndex+1].parent = &parentMerkleTreeNodes[i]
+			childMerkleTreeNodes[childMerkleTreeNodeIndex].PARENT = &parentMerkleTreeNodes[i]
+			childMerkleTreeNodes[childMerkleTreeNodeIndex+1].PARENT = &parentMerkleTreeNodes[i]
 
 			// Set the current MerkleTreeNode's left and right child respectively
-			parentMerkleTreeNodes[i].left = &childMerkleTreeNodes[childMerkleTreeNodeIndex]
-			parentMerkleTreeNodes[i].right = &childMerkleTreeNodes[childMerkleTreeNodeIndex+1]
+			parentMerkleTreeNodes[i].LEFT = &childMerkleTreeNodes[childMerkleTreeNodeIndex]
+			parentMerkleTreeNodes[i].RIGHT = &childMerkleTreeNodes[childMerkleTreeNodeIndex+1]
 
 			// Calculate the current MerkleTreeNode's hash
-			hash := sha256.Sum256(append(parentMerkleTreeNodes[i].left.hash[:], parentMerkleTreeNodes[i].right.hash[:]...))
-			parentMerkleTreeNodes[i].hash = hash
+			hash := sha256.Sum256(append(parentMerkleTreeNodes[i].LEFT.HASH[:], parentMerkleTreeNodes[i].RIGHT.HASH[:]...))
+			parentMerkleTreeNodes[i].HASH = hash
 
 			// Move to the next two children
 			childMerkleTreeNodeIndex += 2
@@ -137,8 +137,8 @@ func createMerkleTree(transactions []Transaction) MerkleTree {
 // Adds the given block into the blockchain
 func (blockchain *Blockchain) addBlock(block *Block) {
 	var previousBlock *Block = &blockchain.chain[len(blockchain.chain)-1]
-	previousBlock.nextBlock = block
-	block.previousBlock = previousBlock
+	previousBlock.NEXTBLOCK = block
+	block.PREVIOUSBLOCK = previousBlock
 	blockchain.chain = append(blockchain.chain, *block)
 }
 
@@ -147,7 +147,7 @@ func (blockchain *Blockchain) addBlock(block *Block) {
 // Creates a new blockchain along with the respective genesis block
 func CreateBlockchain(difficulty int) Blockchain {
 	genesisBlock := Block{
-		timestamp: time.Now(),
+		TIMESTAMP: time.Now(),
 	}
 
 	return Blockchain{
@@ -178,18 +178,18 @@ func NewBlock(blockchain *Blockchain, transactions []Transaction) Block {
 	merkleTree := createMerkleTree(transactions)
 
 	return Block{
-		hash:          merkleTree.root.hash,
-		previousHash:  blockchain.chain[len(blockchain.chain)-1].hash,
-		previousBlock: &blockchain.chain[len(blockchain.chain)-1],
-		merkleTree:    merkleTree,
-		timestamp:     time.Now(),
+		HASH:          merkleTree.ROOT.HASH,
+		PREVIOUSHASH:  blockchain.chain[len(blockchain.chain)-1].HASH,
+		PREVIOUSBLOCK: &blockchain.chain[len(blockchain.chain)-1],
+		MERKLETREE:    merkleTree,
+		TIMESTAMP:     time.Now(),
 	}
 }
 
 // Finds the nonce value for a block*
 func (blockchain *Blockchain) MineBlock(block *Block) {
 	// Concatenate the previous block's hash at the end of the current block's hash
-	concatenated_hashes := append(block.hash[:], block.previousHash[:]...)
+	concatenated_hashes := append(block.HASH[:], block.PREVIOUSHASH[:]...)
 	flag := false     // The flag will be set to true once the nonce has been found
 	var nonce [4]byte // The nonce is a byte array of length four
 
@@ -209,34 +209,34 @@ func (blockchain *Blockchain) MineBlock(block *Block) {
 	}
 
 	fmt.Println(nonce)
-	block.nonce = nonce        // Add the nonce to the mined block
+	block.NONCE = nonce        // Add the nonce to the mined block
 	blockchain.addBlock(block) // Add the block to the blockchain
 }
 
 // Prints all the blocks in the blockchain*
 func (blockchain Blockchain) DisplayBlocks() {
 	for i := 0; i < len(blockchain.chain); i++ {
-		fmt.Println("\n********************************")
-		fmt.Println("// BLOCK HASH: ", blockchain.chain[i].hash)
-		fmt.Println("// PREVIOUS BLOCK HASH: ", blockchain.chain[i].previousHash)
-		fmt.Println("// TIMESTAMP: ", blockchain.chain[i].timestamp.Format(time.RFC822))
-		fmt.Println("// NONCE: ", blockchain.chain[i].nonce)
-		fmt.Println("********************************")
+		fmt.Println("\n////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+		fmt.Println("// BLOCK HASH: ", blockchain.chain[i].HASH)
+		fmt.Println("// PREVIOUS BLOCK HASH: ", blockchain.chain[i].PREVIOUSHASH)
+		fmt.Println("// TIMESTAMP: ", blockchain.chain[i].TIMESTAMP.Format(time.RFC822))
+		fmt.Println("// NONCE: ", blockchain.chain[i].NONCE)
+		fmt.Println("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
 	}
 }
 
 // Prints all the transactions in a block*
 func DisplayMerkelTree(block Block) {
-	if len(block.merkleTree.transactions) == 0 {
+	if len(block.MERKLETREE.TRANSACTIONS) == 0 {
 		fmt.Println("This block does not have any transactions")
 	} else {
-		for i := 0; i < len(block.merkleTree.transactions); i++ {
+		for i := 0; i < len(block.MERKLETREE.TRANSACTIONS); i++ {
 			fmt.Println("")
 			fmt.Println("////////////////////////////////////////////////////////////////")
-			fmt.Println("// ID: ", block.merkleTree.transactions[i].id)
-			fmt.Println("// TIMESTAMP: ", block.merkleTree.transactions[i].timestamp.Format(time.RFC822))
+			fmt.Println("// ID: ", block.MERKLETREE.TRANSACTIONS[i].ID)
+			fmt.Println("// TIMESTAMP: ", block.MERKLETREE.TRANSACTIONS[i].TIMESTAMP.Format(time.RFC822))
 
-			data, error := json.Marshal(block.merkleTree.transactions[i].data)
+			data, error := json.Marshal(block.MERKLETREE.TRANSACTIONS[i].DATA)
 			if error != nil {
 				fmt.Println("Error! The data for this transaction cannot be displayed.")
 			} else {
@@ -260,9 +260,9 @@ func (blockchain Blockchain) VerifyChain() {
 	var modifiedBlock Block
 
 	// Start iterating from the genesis block and compare the current hash of each block with its stored hash
-	for currentBlock.nextBlock != nil {
+	for currentBlock.NEXTBLOCK != nil {
 		currentHash := currentBlock.CalculateHash()
-		storedHash := currentBlock.hash
+		storedHash := currentBlock.HASH
 
 		if bytes.Equal(currentHash[:], storedHash[:]) {
 			modified = true
@@ -270,11 +270,11 @@ func (blockchain Blockchain) VerifyChain() {
 			break
 		}
 
-		currentBlock = *currentBlock.nextBlock
+		currentBlock = *currentBlock.NEXTBLOCK
 	}
 
 	if modified {
-		fmt.Println("The blockchain has been modified. Block ", modifiedBlock.hash, " has been modified.")
+		fmt.Println("The blockchain has been modified. Block ", modifiedBlock.HASH, " has been modified.")
 	} else {
 		fmt.Println("The blockchain has not been modified.")
 	}
@@ -282,7 +282,7 @@ func (blockchain Blockchain) VerifyChain() {
 
 // Calculates the hash of a transaction or block*
 func (transaction Transaction) CalculateHash() [32]byte {
-	data, error := json.Marshal(transaction.data)
+	data, error := json.Marshal(transaction.DATA)
 	if error != nil {
 		fmt.Println("Error! The hash for this transaction cannot be calculated.")
 		return [32]byte{}
@@ -293,10 +293,24 @@ func (transaction Transaction) CalculateHash() [32]byte {
 
 func (block Block) CalculateHash() [32]byte {
 	// Create a temporary Merkle tree for the transactions in the block and return the hash of the root
-	tempMerkleTree := createMerkleTree(block.merkleTree.transactions)
-	hash := tempMerkleTree.root.hash
+	temporaryMerkleTree := createMerkleTree(block.MERKLETREE.TRANSACTIONS)
+	hash := temporaryMerkleTree.ROOT.HASH
 	return hash
 }
 
 func (blockchain *Blockchain) Test(block Block) {
+}
+
+// Calculates the length of the blockchain that the given block is in
+func (block Block) GetBlockchainLength() int {
+	length := 0
+	var currentBlock *Block = &block
+
+	// Iterate backwards till the genesis block
+	for currentBlock != nil {
+		currentBlock = currentBlock.PREVIOUSBLOCK
+		length++
+	}
+
+	return length
 }

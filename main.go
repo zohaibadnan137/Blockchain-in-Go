@@ -1,37 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
-	"github.com/zohaibadnan137/assignment01bca"
+	"github.com/zohaibadnan137/assignment02bca"
 )
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	fmt.Println("Create a new blockchain...")
-	blockchain := assignment01bca.CreateBlockchain(2)
+	node := assignment02bca.CreateNode("BLKC_1")
+	network := assignment02bca.CreateNetwork("BLKC", &node)
+	_ = network
 
-	fmt.Println("Create three new transactions from Zohaib to Hussain...")
+	go node.Bootstrapping()
 
-	var transactions [3]assignment01bca.Transaction
-	transactions[0] = assignment01bca.CreateTransaction("Zohaib", "Hussain", 10)
-	transactions[1] = assignment01bca.CreateTransaction("Zohaib", "Hussain", 15)
-	transactions[2] = assignment01bca.CreateTransaction("Zohaib", "Hussain", 15)
-
-	fmt.Println("Create a new block and add the transactions to it...")
-	block := assignment01bca.NewBlock(&blockchain, transactions[:])
-
-	fmt.Println("Print the transactions added in the new block...")
-	assignment01bca.DisplayMerkelTree(block)
-
-	start := time.Now()
-	fmt.Println("Mining the block...")
-	blockchain.MineBlock(&block)
-	elapsed := time.Since(start)
-	fmt.Printf("Mining took %s.", elapsed)
-
-	blockchain.DisplayBlocks()
+	node_2 := assignment02bca.CreateNode("BLKC_2")
+	node_2.JoinNetwork(assignment02bca.GetBootstrapData(0))
+	node_2.DisplayNeighbours()
 }
