@@ -284,6 +284,10 @@ func (node *Node) UpdateNeighbours() {
 
 }
 
+func (node *Node) SetPort(port string) {
+	node.port = port
+}
+
 func (node *Node) Run() {
 	// Listen on the assigned IP address and port number for incoming connections
 	listener, err := net.Listen(TYPE, node.ip+":"+node.port)
@@ -381,11 +385,11 @@ func (node *Node) ReceiveTransaction(conn net.Conn) {
 	node.nodeMutex.Unlock()
 
 	// Propagate the received transaction further
-	go node.PropogateTransaction(transaction)
+	node.PropogateTransaction(transaction)
 
 	// If the number of stored transactions reaches the specified limit, create a new block
 	if len(node.transactions) == TRANSACTIONS_PER_BLOCK {
-		go node.CreateBlock()
+		node.CreateBlock()
 	}
 }
 
@@ -421,13 +425,12 @@ func (node *Node) ReceiveBlock(conn net.Conn) {
 	// Prune the transactions in the newly received block from the stored list of transactions
 	node.PruneTransactions(block.MERKLETREE.TRANSACTIONS)
 
-	fmt.Println("\n****************************************************************")
+	fmt.Println("\n********************************************************************************************************************************")
 	fmt.Println("Block RECEIVED BY NODE " + node.name + ".")
-	node.blockchain.Display()
-	fmt.Println("****************************************************************")
+	block.DisplayBlock()
 
 	// Propogate the received block further
-	go node.PropogateBlock(block)
+	node.PropogateBlock(block)
 }
 
 func (node *Node) CreateBlock() {
